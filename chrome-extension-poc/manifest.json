@@ -1,0 +1,33 @@
+{
+    "name": "Gather Voices Video Recorder",
+    "version": "1.0.0",
+    "description": "Easily record video & audio from your computer's camera!",
+    "manifest_version": 3,
+    "author": "Gather Voices",
+
+    "permissions": [
+        "<all_urls>", "scripting", "storage", "activeTab", "desktopCapture", "tabCapture", "tabs", "https://www.google.com/*", "http://*/", "https://*/", "file://*"
+    ],
+
+    "background": {
+        "service_worker": "background.js"
+    },
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "web_accessible_resources": [{
+            "resources": ["data/interface/camera.html", "data/interface/css/index.css"],
+            "matches": ["<all_urls>"]
+        }],
+
+    "action": {
+        "default_popup": "data/interface/index.html",
+        "default_title": "GV Video Recorder",
+        "default_icon": {
+            "16": "data/icons/gv-logo.png"
+        }
+    },
+    "icons": {
+        "32": "data/icons/gv-logo.png"
+    }
+}

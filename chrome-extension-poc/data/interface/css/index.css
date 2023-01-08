@@ -1,0 +1,37 @@
+.unable-to-record-msg{
+    width: 240px;
+    padding-top: 11px;
+    color: red;
+    padding-left: 20px;
+
+}
+.video-record-btn{
+    float: left;
+    margin-left: 10px;
+}
+
+.screen-record-btns{
+    float: right;
+    margin-right: 10px;
+}
+
+.wrap-iframe-camera {
+    position: fixed;
+    margin-top: 10px;
+    margin-left: 10px;
+    z-index: 9999999999 !important;
+}
+
+.camera-iframe-content{
+    border:0;
+    width: 210px;
+    height: 210px;
+}
+
+.popup-button{
+
+    margin-right: 12px;
+    margin-top: 8px;
+    margin-bottom: 10px;
+
+}
