@@ -3,39 +3,57 @@
 $(document).ready(function () {
 
     var recorder;
-    var isScreenSharingActive = false;
-
     injectContent();
+
+
     function injectContent() {
 
         const uniqueid = "gv-wrapper-extention";
-        // Extension wrapper
         var wrapper = "<div id='" + uniqueid + "' ></div>";
         $("body").prepend(wrapper);
-
         // Inject the camera iframe
         var iframeinject = "<div id='camera-hide'></div><div class='wrap-iframe-camera'><iframe class='camera-iframe-content' src='" + chrome.runtime.getURL('data/interface/camera.html') + "' allow='camera'></iframe></div>";
         $("#" + uniqueid).prepend(iframeinject);
 
-        //====Others contents
-        chrome.storage.sync.get(['isScreenSharingActive'], function (result) {
-
-            var isScreenSharingActive = result.isScreenSharingActive;
-            if (!isScreenSharingActive) {
-                ScreenRecord();
-            }
-        });
-
+        /*
+         //====Others contents
+         chrome.storage.sync.get(['isScreenSharingActive'], function (result) {
+         
+         var isScreenSharingActive = result.isScreenSharingActive;
+         if (!isScreenSharingActive) {
+         // ScreenRecord();
+         }
+         });
+         */
     }
 
 
-    function removeRecordingContent() {
+    function removeCameraContent() {
         console.log("Remove  contents");
         $('#gv-wrapper-extention').remove();
 
     }
 
-//========================
+
+
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+        console.log('Content Script JS Message =>' + message);
+
+        if (message === 'removeContent') {
+            removeCameraContent();
+        } else if (message === 'screen-share-init') {
+            console.log('Content --- screen-share-init');
+            ScreenRecord();
+        } 
+    });
+
+
+
+
+//================================== Share Screen handling ===================
+
+
 
     if (!navigator.getDisplayMedia && !navigator.mediaDevices.getDisplayMedia) {
         var error = 'Your browser does NOT support the getDisplayMedia API.';
@@ -151,20 +169,7 @@ $(document).ready(function () {
     }
 
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
-        console.log('Message::::' + message);
-
-        if (message === 'removeContent') {
-            removeRecordingContent();
-        } else if (message === 'screen-share-init') {
-            console.log('Content --- screen-share-init');
-            ScreenRecord();
-        } else if (message === 'stop-screen-share') {
-            stopScreenRecord();
-            removeRecordingContent();
-        }
-    });
 
 
 

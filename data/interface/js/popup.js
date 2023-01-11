@@ -3,6 +3,14 @@
 
 $(document).ready(function () {
 
+    
+
+//    chrome.storage.local.set({isCameraContentActive: false});
+//
+//    chrome.storage.local.get(["isCameraContentActive"]).then((result) => {
+//        alert("Value currently is " + result.isCameraContentActive);
+//    });
+
     // Check if current tab is unable to be recorded
     chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
         if (tabs[0].url.includes("chrome://") || tabs[0].url.includes("chrome-extension://") || tabs[0].url.includes("chrome.com") || tabs[0].url.includes("chrome.google.com")) {
@@ -18,21 +26,14 @@ $(document).ready(function () {
     var recordButton = document.getElementById('record-button');
     var stopRecordButton = document.getElementById('stop-record-button');
 
-
-    chrome.storage.sync.get(['isScreenSharingActive'], function (result) {
-
-        var isScreenSharingActive = result.isScreenSharingActive;
-        if (!isScreenSharingActive) {
-            stopRecordButton.style.display = "none";
+    chrome.storage.local.get(['isCameraContentActive'], function (result) {
+        // alert('fff=>' + result.isCameraContentActive);
+        if (result.isCameraContentActive) {
+            recordButton.style.display = "none"; // start disappear
         } else {
-            recordButton.style.display = "none";
+            stopRecordButton.style.display = "none"; // stop disappear
         }
     });
-
-
-
-
-
 
 
     $("#record-button").click(function () {
@@ -44,21 +45,17 @@ $(document).ready(function () {
         stopRecord();
     });
 
-    //=== init camera bubble event
+
     function injectCameraContent() {
+
         chrome.runtime.sendMessage('initCameraBubble', (response) => {
-
-
         });
-
     }
 
     function stopRecord() {
         chrome.runtime.sendMessage('stop-screen-share', (response) => {
             console.log('received reocrd data', response);
         });
-
     }
-
 
 });
