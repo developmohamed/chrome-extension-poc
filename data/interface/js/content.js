@@ -2,9 +2,13 @@
 
 $(document).ready(function () {
 
-    var recorder;
-    injectContent();
+    chrome.storage.local.get(["isShareScreenActive"]).then((result) => {
+        if (!result.isShareScreenActive) {
+            getDesktop();
+        }
+    });
 
+    injectContent();
 
     function injectContent() {
 
@@ -31,22 +35,101 @@ $(document).ready(function () {
     function removeCameraContent() {
         console.log("Remove  contents");
         $('#gv-wrapper-extention').remove();
-
     }
-
 
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
-        console.log('Content Script JS Message =>' + message);
+        console.log('Content Script JS Message =>' + message.streamId);
 
         if (message === 'removeContent') {
             removeCameraContent();
         } else if (message === 'screen-share-init') {
             console.log('Content --- screen-share-init');
-            ScreenRecord();
-        } 
+            //ScreenRecord();
+
+        } else if (message === 'stop-recording') {
+            stopRecordingCallback();
+        }
     });
+
+
+
+//===========================================
+    let recorder;
+    function getDesktop() {
+
+        navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
+                .then((stream) => {
+                    // Use the stream here
+                    // Create a MediaRecorder and start recording
+                    recorder = new MediaRecorder(stream);
+                    const chunks = [];
+                    recorder.ondataavailable = (e) => {
+                        chunks.push(e.data);
+                    };
+
+                    recorder.start();
+                    recorder.onstop = (e) => saveToFile(new Blob(chunks), "screen-sharing.webm");
+                    chrome.storage.local.set({isShareScreenActive: true});
+                });
+
+
+
+    }
+
+    function saveToFile(blob, name) {
+        console.log('calll saveToFile fn');
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
+        a.href = url;
+        a.download = name;
+        a.click();
+        URL.revokeObjectURL(url);
+        a.remove();
+        chrome.storage.local.set({isShareScreenActive: false});
+    }
+
+
+    function stopRecordingCallback() {
+        const url = URL.createObjectURL(recorder.getBlob());
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "gv-recording.webm";
+        a.click();
+        URL.revokeObjectURL(url);
+        recorder.screen.stop();
+        recorder.destroy();
+        recorder = null;
+        chrome.storage.local.set({isShareScreenActive: false});
+
+    }
+
+
+//===////////////////////////////////
+
+    function enableScreenSharing(streamId) {
+
+
+
+        var port = chrome.runtime.connect();
+
+        navigator.mediaDevices.getUserMedia({
+            video: {
+                mandatory: {
+                    chromeMediaSource: 'desktop'
+                }
+            }
+        }).then(function (stream) {
+            port.postMessage({type: "capture", stream: stream});
+        }).catch(function (error) {
+            console.error(error);
+        });
+
+
+    }
 
 
 
@@ -100,25 +183,7 @@ $(document).ready(function () {
         });
     }
 
-    function stopRecordingCallback() {
-//        video.src = video.srcObject = null;
-//        video.src = URL.createObjectURL(recorder.getBlob());
 
-        const url = URL.createObjectURL(recorder.getBlob());
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "gv-recording.webm";
-        a.click();
-        URL.revokeObjectURL(url);
-
-
-
-        recorder.screen.stop();
-        recorder.destroy();
-        recorder = null;
-
-        //document.getElementById('btn-start-recording').disabled = false;
-    }
 
 
     function ScreenRecord() {

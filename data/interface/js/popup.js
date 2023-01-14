@@ -17,6 +17,7 @@ $(document).ready(function () {
     handlePopUpPageState();
     $("#record-button").click(function () {
         injectCameraContent();
+        //startScreenSharing();
     });
 
     $("#stop-record-button").click(function () {
@@ -58,3 +59,11 @@ function handlePopUpPageState() {
     });
 }
 
+
+
+function startScreenSharing() {
+
+    chrome.runtime.sendMessage('enable-screen-share', (response) => {
+    });
+
+}

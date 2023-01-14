@@ -1,5 +1,8 @@
-//import Score from 'data/interface/js/jquery.min.js';
-//importScripts('interface/js/recordRTC.js');
+//try {
+//    importScripts('data/interface/js/recordRTC.js' /*, and so on */);
+//} catch (e) {
+//    console.error(e);
+//}
 
 var visitedTabs = [];
 
@@ -25,7 +28,7 @@ function injectCameraContent() {
 
                 chrome.scripting.executeScript({
                     target: {tabId: activeTabId, allFrames: true},
-                    files: ['data/interface/js/jquery.min.js', 'data/interface/js/content.js'],
+                    files: ['data/interface/js/jquery.min.js', 'data/interface/js/recordRTC.js', 'data/interface/js/content.js'],
                 });
                 chrome.scripting.insertCSS({
                     target: {tabId: activeTabId},
@@ -41,10 +44,9 @@ function injectCameraContent() {
 function startRecording() {
     injectCameraContent(); // camera init
     chrome.storage.local.set({isCameraContentActive: true});
-    chrome.runtime.sendMessage({type: "start-recording"});
-    //  getDesktop();
-}
+   // saveTabThatStartedShareScreen(); // for demo
 
+}
 
 
 function stopRecording() {
@@ -57,7 +59,6 @@ function stopRecording() {
         reInitCameraContentsParams();
     }
 
-    chrome.runtime.sendMessage({type: "stop-recording"});
 }
 
 function reInitCameraContentsParams() {
@@ -70,7 +71,7 @@ function reInitCameraContentsParams() {
 //=== Tab refresh
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 //To:Do
-
+    chrome.storage.local.set({isShareScreenActive: false});
 });
 
 //=== Tab switch
@@ -128,6 +129,94 @@ function removeCameraContentFromAllTabs() {
             visitedTabs.splice(i, 1);
         });
     }
+
+}
+//=================Not prefer =======================
+
+function saveTabThatStartedShareScreen() {
+
+    chrome.tabs.query({active: true}, (tabs) => {
+        if (tabs.length) {
+            const tab = tabs[0];
+            chrome.storage.local.set({startSharingTab: tab});
+        }
+        return false;
+    });
+
+}
+
+function sendStopRecording() {
+    chrome.storage.local.get(["startSharingTab"]).then((result) => {
+        if (result.startSharingTab) {
+            chrome.tabs.sendMessage(result.startSharingTab, "stop-recording", function (response) {
+            });
+        }
+    });
+
+}
+
+//====================================================
+function enableScreenSharing() {
+
+    chrome.tabs.query({active: true}, (tabs) => {
+        if (tabs.length) {
+            const tab = tabs[0];
+            chrome.tabs.sendMessage(tabs[0].id, "screen-share-init", function (response) {
+
+            });
+
+        }
+        return false;
+    });
+
+//     chrome.tabs.sendMessage(visitedTabs[0], "screen-sharing", function (response) {
+//            
+//        });
+//        
+
+    /*
+     chrome.tabs.query({active: true}, (tabs) => {
+     if (tabs.length) {
+     const tab = tabs[0];
+     var pending = chrome.desktopCapture.chooseDesktopMedia(["screen", "window"], tab, (streamId) => {
+     
+     //===============
+     
+     if (!streamId) {
+     console.log("User cancelled");
+     return;
+     }
+     chrome.webRTCAPI.createStream({
+     audio: false,
+     video: {
+     mandatory: {
+     chromeMediaSource: "desktop",
+     chromeMediaSourceId: streamId
+     }
+     }
+     }, function (stream) {
+     // Do something with the stream
+     });
+     
+     //====================================
+     
+     
+     
+     
+     
+     
+     console.log("fff");
+     chrome.tabs.sendMessage(tabs[0].id, {
+     message: 'attach-media-stream',
+     streamId: streamId
+     });
+     
+     //  chrome.storage.local.set({currentScreenSharingStreamId: streamId});
+     });
+     }
+     return false;
+     });
+     */
 
 }
 
