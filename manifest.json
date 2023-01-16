@@ -1,7 +1,7 @@
 {
-    "name": "Gather Voices Video Recorder",
+    "name": "Gather Voices Recorder",
     "version": "1.0.0",
-    "description": "Easily record video & audio from your computer's camera!",
+    "description": "GV recording extention!",
     "manifest_version": 3,
     "author": "Gather Voices",
 

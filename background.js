@@ -8,24 +8,17 @@ var visitedTabs = [];
 
 chrome.runtime.onStartup.addListener(function () {
     console.log('open chrooooooooooooom');
-
 });
-
 
 //=== start ture incase first recording
 function injectCameraContent() {
 
     chrome.windows.getCurrent(w => {
-
         chrome.tabs.query({active: true, windowId: w.id}, tabs => {
-
             var activeTabId = tabs[0].id;
             console.log('Init camera content with Id=' + activeTabId);
-
             if (visitedTabs.indexOf(activeTabId) == -1) {
-
                 visitedTabs.push(activeTabId);
-
                 chrome.scripting.executeScript({
                     target: {tabId: activeTabId, allFrames: true},
                     files: ['data/interface/js/jquery.min.js', 'data/interface/js/recordRTC.js', 'data/interface/js/content.js'],
@@ -34,30 +27,26 @@ function injectCameraContent() {
                     target: {tabId: activeTabId},
                     files: ['data/interface/css/index.css']
                 });
-
             }
         });
     });
 }
 
-
 function startRecording() {
     injectCameraContent(); // camera init
     chrome.storage.local.set({isCameraContentActive: true});
-   // saveTabThatStartedShareScreen(); // for demo
-
+    chrome.runtime.sendMessage({popupMsg: "close"});
 }
 
 
 function stopRecording() {
-
     if (visitedTabs.length > 0) {
         chrome.tabs.sendMessage(visitedTabs[0], "removeContent", function (response) {
-            reInitCameraContentsParams();
         });
-    } else {
-        reInitCameraContentsParams();
     }
+    reInitCameraContentsParams();
+    chrome.storage.local.set({isShareScreenActive: false});
+    chrome.runtime.sendMessage({popupMsg: "close"});
 
 }
 
@@ -70,8 +59,9 @@ function reInitCameraContentsParams() {
 
 //=== Tab refresh
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-//To:Do
-    chrome.storage.local.set({isShareScreenActive: false});
+    if (changeInfo.status === 'complete' && tab.active) {
+        reInitCameraContents();
+    }
 });
 
 //=== Tab switch
@@ -122,7 +112,6 @@ function removeTabByIdFromVisitedTabList(tabId) {
 }
 
 function removeCameraContentFromAllTabs() {
-
     for (var i = 0; i < visitedTabs.length; i++) {
         chrome.tabs.sendMessage(visitedTabs[i], "removeContent", function (response) {
             console.log("Remove Content at Tab Id=" + visitedTabs[i])
@@ -199,12 +188,7 @@ function enableScreenSharing() {
      });
      
      //====================================
-     
-     
-     
-     
-     
-     
+ 
      console.log("fff");
      chrome.tabs.sendMessage(tabs[0].id, {
      message: 'attach-media-stream',
@@ -221,8 +205,6 @@ function enableScreenSharing() {
 }
 
 //==================================== Desktop sharing==============
-
-
 //var output = new MediaStream();
 //const streamSaver = window.streamSaver;
 var output = '';
@@ -292,8 +274,6 @@ function getDesktop2() {
     })
 }
 
-
-
 // Set up recording
 function newRecording(stream) {
 
@@ -311,15 +291,9 @@ function newRecording(stream) {
     mediaRecorder = new MediaRecorder(stream, mediaConstraints);
     // injectContent(true);
 }
-
-
 // Stop recording
 function endRecording(stream, writer, recordedBlobs) {
-
-
     // Hide injected content
-
-
     // Stop tab and microphone streams
     stream.getTracks().forEach(function (track) {
         track.stop();

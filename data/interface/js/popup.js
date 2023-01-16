@@ -40,7 +40,7 @@ function stopRecord() {
 
 // Receive messages
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.type == 'start-recording' || request.type == 'stop-recording') {
+    if (request.popupMsg == 'close') {
         window.close();
     }
 });

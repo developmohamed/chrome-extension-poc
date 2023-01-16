@@ -35,6 +35,7 @@ $(document).ready(function () {
     function removeCameraContent() {
         console.log("Remove  contents");
         $('#gv-wrapper-extention').remove();
+        // stopRecordingCallback();
     }
 
 
@@ -47,9 +48,6 @@ $(document).ready(function () {
         } else if (message === 'screen-share-init') {
             console.log('Content --- screen-share-init');
             //ScreenRecord();
-
-        } else if (message === 'stop-recording') {
-            stopRecordingCallback();
         }
     });
 
@@ -70,7 +68,7 @@ $(document).ready(function () {
                     };
 
                     recorder.start();
-                    recorder.onstop = (e) => saveToFile(new Blob(chunks), "screen-sharing.webm");
+                    recorder.onstop = (e) => saveToFile(new Blob(chunks), "Screen sharing.webm");
                     chrome.storage.local.set({isShareScreenActive: true});
                 });
 
@@ -79,6 +77,7 @@ $(document).ready(function () {
     }
 
     function saveToFile(blob, name) {
+
         console.log('calll saveToFile fn');
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -89,6 +88,8 @@ $(document).ready(function () {
         a.click();
         URL.revokeObjectURL(url);
         a.remove();
+        removeCameraContent();
+        chrome.storage.local.set({isCameraContentActive: false});
         chrome.storage.local.set({isShareScreenActive: false});
     }
 
