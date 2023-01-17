@@ -1,14 +1,5 @@
-//try {
-//    importScripts('data/interface/js/recordRTC.js' /*, and so on */);
-//} catch (e) {
-//    console.error(e);
-//}
 
 var visitedTabs = [];
-
-chrome.runtime.onStartup.addListener(function () {
-    console.log('open chrooooooooooooom');
-});
 
 //=== start ture incase first recording
 function injectCameraContent() {
@@ -47,7 +38,6 @@ function stopRecording() {
     reInitCameraContentsParams();
     chrome.storage.local.set({isShareScreenActive: false});
     chrome.runtime.sendMessage({popupMsg: "close"});
-
 }
 
 function reInitCameraContentsParams() {

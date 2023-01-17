@@ -59,10 +59,7 @@ function handlePopUpPageState() {
     });
 }
 
-
-
 function startScreenSharing() {
-
     chrome.runtime.sendMessage('enable-screen-share', (response) => {
     });
 

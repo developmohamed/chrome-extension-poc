@@ -1,5 +1,4 @@
 
-
 $(document).ready(function () {
 
     chrome.storage.local.get(["isShareScreenActive"]).then((result) => {
@@ -8,43 +7,12 @@ $(document).ready(function () {
         }
     });
 
-    injectContent();
-
-    function injectContent() {
-
-        const uniqueid = "gv-wrapper-extention";
-        var wrapper = "<div id='" + uniqueid + "' ></div>";
-        $("body").prepend(wrapper);
-        // Inject the camera iframe
-        var iframeinject = "<div id='camera-hide'></div><div class='wrap-iframe-camera'><iframe class='camera-iframe-content' src='" + chrome.runtime.getURL('data/interface/camera.html') + "' allow='camera'></iframe></div>";
-        $("#" + uniqueid).prepend(iframeinject);
-
-        /*
-         //====Others contents
-         chrome.storage.sync.get(['isScreenSharingActive'], function (result) {
-         
-         var isScreenSharingActive = result.isScreenSharingActive;
-         if (!isScreenSharingActive) {
-         // ScreenRecord();
-         }
-         });
-         */
-    }
-
-
-    function removeCameraContent() {
-        console.log("Remove  contents");
-        $('#gv-wrapper-extention').remove();
-        // stopRecordingCallback();
-    }
-
+    injectCameraBubble();
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-
         console.log('Content Script JS Message =>' + message.streamId);
-
         if (message === 'removeContent') {
-            removeCameraContent();
+            removeCameraBubbleContent();
         } else if (message === 'screen-share-init') {
             console.log('Content --- screen-share-init');
             //ScreenRecord();
@@ -52,8 +20,6 @@ $(document).ready(function () {
     });
 
 
-
-//===========================================
     let recorder;
     function getDesktop() {
 
@@ -88,7 +54,7 @@ $(document).ready(function () {
         a.click();
         URL.revokeObjectURL(url);
         a.remove();
-        removeCameraContent();
+        removeCameraBubbleContent();
         chrome.storage.local.set({isCameraContentActive: false});
         chrome.storage.local.set({isShareScreenActive: false});
     }
@@ -109,35 +75,8 @@ $(document).ready(function () {
     }
 
 
-//===////////////////////////////////
 
-    function enableScreenSharing(streamId) {
-
-
-
-        var port = chrome.runtime.connect();
-
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                mandatory: {
-                    chromeMediaSource: 'desktop'
-                }
-            }
-        }).then(function (stream) {
-            port.postMessage({type: "capture", stream: stream});
-        }).catch(function (error) {
-            console.error(error);
-        });
-
-
-    }
-
-
-
-
-//================================== Share Screen handling ===================
-
-
+//================================== Share Screen handling Testing===================
 
     if (!navigator.getDisplayMedia && !navigator.mediaDevices.getDisplayMedia) {
         var error = 'Your browser does NOT support the getDisplayMedia API.';
@@ -188,22 +127,17 @@ $(document).ready(function () {
 
 
     function ScreenRecord() {
-
         captureScreen(function (screen) {
             // video.srcObject = screen;
-
             recorder = RecordRTC(screen, {
                 type: 'video'
             });
 
             recorder.startRecording();
-
             // release screen on stopRecording
             recorder.screen = screen;
-
             //  document.getElementById('btn-stop-recording').disabled = false;
         });
-
         chrome.storage.sync.set({isScreenSharingActive: true}, function () {
         });
     }
@@ -235,10 +169,21 @@ $(document).ready(function () {
     }
 
 
-
-
-
-
 });
 
 
+function injectCameraBubble() {
+    const uniqueid = "gv-wrapper-extention";
+    var wrapper = "<div id='" + uniqueid + "' ></div>";
+    $("body").prepend(wrapper);
+    // Inject the camera iframe
+    var iframeinject = "<div id='camera-hide'></div><div class='wrap-iframe-camera'><iframe class='camera-iframe-content' src='" + chrome.runtime.getURL('data/interface/camera.html') + "' allow='camera'></iframe></div>";
+    $("#" + uniqueid).prepend(iframeinject);
+}
+
+
+function removeCameraBubbleContent() {
+    console.log("Remove  contents");
+    $('#gv-wrapper-extention').remove();
+    // stopRecordingCallback();
+}
